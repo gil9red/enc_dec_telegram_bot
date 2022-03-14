@@ -72,10 +72,8 @@ def text_to_ord(text: str) -> str:
 
 
 def ord_to_text(text: str) -> str:
-    text = json.dumps(text)
     items = json.loads(text)
     return ''.join(chr(x) for x in items)
-
 
 
 log = get_logger(__file__, DIR_LOGS / 'log.txt')
@@ -133,6 +131,7 @@ def on_callback_query(update: Update, context: CallbackContext):
             raise Exception('The resulting text is more than 4096 characters!')
 
     except Exception as e:
+        log.exception('Error:')
         text = f'⚠ Error: {e}'
 
     if prev_text != text:
