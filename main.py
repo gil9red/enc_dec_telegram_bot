@@ -5,6 +5,7 @@ __author__ = 'ipetrash'
 
 
 import base64
+import json
 import os
 import time
 
@@ -16,6 +17,8 @@ from telegram.ext import (
 
 from config import TOKEN, DIR_LOGS
 from common import get_logger, log_func, reply_error
+from third_party.from_ghbdtn import from_ghbdtn
+from third_party.decode_escapes_telegram_bot.utils import decode as decode_escapes
 
 
 REPLY_MARKUP = InlineKeyboardMarkup([
@@ -26,6 +29,16 @@ REPLY_MARKUP = InlineKeyboardMarkup([
     [
         InlineKeyboardButton("text -> hex", callback_data='text_to_hex'),
         InlineKeyboardButton("hex -> text", callback_data='hex_to_text'),
+    ],
+    [
+        InlineKeyboardButton("text -> ord", callback_data='text_to_ord'),
+        InlineKeyboardButton("ord -> text", callback_data='ord_to_text'),
+    ],
+    [
+        InlineKeyboardButton("ghbdtn -> привет", callback_data='from_ghbdtn'),
+    ],
+    [
+        InlineKeyboardButton("decode escapes", callback_data='decode_escapes'),
     ],
     [
         InlineKeyboardButton("reset", callback_data='reset'),
@@ -51,6 +64,18 @@ def text_to_hex(text: str) -> str:
 
 def hex_to_text(text: str) -> str:
     return bytes.fromhex(text).decode(encoding=ENCODING, errors=ERRORS)
+
+
+def text_to_ord(text: str) -> str:
+    items = [ord(c) for c in text]
+    return json.dumps(items)
+
+
+def ord_to_text(text: str) -> str:
+    text = json.dumps(text)
+    items = json.loads(text)
+    return ''.join(chr(x) for x in items)
+
 
 
 log = get_logger(__file__, DIR_LOGS / 'log.txt')
@@ -91,6 +116,14 @@ def on_callback_query(update: Update, context: CallbackContext):
                 text = text_to_hex(text)
             case 'hex_to_text':
                 text = hex_to_text(text)
+            case 'text_to_ord':
+                text = text_to_ord(text)
+            case 'ord_to_text':
+                text = ord_to_text(text)
+            case 'from_ghbdtn':
+                text = from_ghbdtn(text)
+            case 'decode_escapes':
+                text = decode_escapes(text)
             case 'reset':
                 text = query.message.reply_to_message.text
             case _:
