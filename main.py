@@ -17,11 +17,12 @@ from telegram.ext import (
 )
 
 from config import TOKEN, DIR_LOGS
-from commands import text_to_base64, base64_to_text, text_to_hex, hex_to_text, text_to_ord, ord_to_text
+from commands import (
+    text_to_base64, base64_to_text, text_to_hex, hex_to_text,
+    text_to_bin, bin_to_text, text_to_ord, ord_to_text,
+    from_ghbdtn, decode_escapes
+)
 from common import get_logger, log_func, reply_error
-from third_party.bin2str import str2bin as text_to_bin, bin2str as bin_to_text
-from third_party.from_ghbdtn import from_ghbdtn
-from third_party.decode_escapes_telegram_bot.utils import decode as decode_escapes
 
 
 class CommandEnum(enum.Enum):

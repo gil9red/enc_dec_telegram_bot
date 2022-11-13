@@ -7,6 +7,10 @@ __author__ = 'ipetrash'
 import base64
 import json
 
+from third_party.bin2str import str2bin as text_to_bin, bin2str as bin_to_text
+from third_party.from_ghbdtn import from_ghbdtn
+from third_party.decode_escapes_telegram_bot.utils import decode as decode_escapes
+
 
 ENCODING = 'utf-8'
 ERRORS = 'replace'
@@ -37,3 +41,12 @@ def text_to_ord(text: str) -> str:
 def ord_to_text(text: str) -> str:
     items = json.loads(text)
     return ''.join(chr(x) for x in items)
+
+
+if __name__ == '__main__':
+    assert base64_to_text(text_to_base64('Hello')) == 'Hello'
+    assert hex_to_text(text_to_hex('Hello')) == 'Hello'
+    assert bin_to_text(text_to_bin('Hello')) == 'Hello'
+    assert ord_to_text(text_to_ord('Привет')) == 'Привет'
+    assert from_ghbdtn('Ghbdtn') == 'Привет'
+    assert decode_escapes('\U00000032\U0000002b\x32=\U00000034&euro; \U0001F601') == '2+2=4€ 😁'
