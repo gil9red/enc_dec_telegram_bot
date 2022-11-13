@@ -4,10 +4,11 @@
 __author__ = 'ipetrash'
 
 
-import base64
-import json
+import enum
 import os
 import time
+
+from typing import Callable
 
 # pip install python-telegram-bot
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
@@ -16,64 +17,56 @@ from telegram.ext import (
 )
 
 from config import TOKEN, DIR_LOGS
+from commands import text_to_base64, base64_to_text, text_to_hex, hex_to_text, text_to_ord, ord_to_text
 from common import get_logger, log_func, reply_error
 from third_party.from_ghbdtn import from_ghbdtn
 from third_party.decode_escapes_telegram_bot.utils import decode as decode_escapes
 
 
+class CommandEnum(enum.Enum):
+    text_to_base64 = ("text -> base64", text_to_base64)
+    base64_to_text = ("base64 -> text", base64_to_text)
+    text_to_hex = ("text -> hex", text_to_hex)
+    hex_to_text = ("hex -> text", hex_to_text)
+    text_to_ord = ("text -> ord", text_to_ord)
+    ord_to_text = ("ord -> text", ord_to_text)
+    from_ghbdtn = ("ghbdtn -> привет", from_ghbdtn)
+    decode_escapes = ("decode escapes", decode_escapes)
+
+    def __init__(self, title: str, func: Callable[[str], str]):
+        self.title = title
+        self.func = func
+
+    def __call__(self, *args, **kwargs) -> str:
+        return self.func(*args, **kwargs)
+
+    def get_button(self) -> InlineKeyboardButton:
+        return InlineKeyboardButton(self.title, callback_data=self.name)
+
+
 REPLY_MARKUP = InlineKeyboardMarkup([
     [
-        InlineKeyboardButton("text -> base64", callback_data='text_to_base64'),
-        InlineKeyboardButton("base64 -> text", callback_data='base64_to_text'),
+        CommandEnum.text_to_base64.get_button(),
+        CommandEnum.base64_to_text.get_button(),
     ],
     [
-        InlineKeyboardButton("text -> hex", callback_data='text_to_hex'),
-        InlineKeyboardButton("hex -> text", callback_data='hex_to_text'),
+        CommandEnum.text_to_hex.get_button(),
+        CommandEnum.hex_to_text.get_button(),
     ],
     [
-        InlineKeyboardButton("text -> ord", callback_data='text_to_ord'),
-        InlineKeyboardButton("ord -> text", callback_data='ord_to_text'),
+        CommandEnum.text_to_ord.get_button(),
+        CommandEnum.ord_to_text.get_button(),
     ],
     [
-        InlineKeyboardButton("ghbdtn -> привет", callback_data='from_ghbdtn'),
+        CommandEnum.from_ghbdtn.get_button(),
     ],
     [
-        InlineKeyboardButton("decode escapes", callback_data='decode_escapes'),
+        CommandEnum.decode_escapes.get_button(),
     ],
     [
         InlineKeyboardButton("reset", callback_data='reset'),
     ]
 ])
-
-ENCODING = 'utf-8'
-ERRORS = 'replace'
-
-
-def text_to_base64(text: str) -> str:
-    data = text.encode(encoding=ENCODING, errors=ERRORS)
-    return base64.b64encode(data).decode(encoding=ENCODING, errors=ERRORS)
-
-
-def base64_to_text(text: str) -> str:
-    return base64.b64decode(text).decode(encoding=ENCODING, errors=ERRORS)
-
-
-def text_to_hex(text: str) -> str:
-    return text.encode(encoding=ENCODING, errors=ERRORS).hex()
-
-
-def hex_to_text(text: str) -> str:
-    return bytes.fromhex(text).decode(encoding=ENCODING, errors=ERRORS)
-
-
-def text_to_ord(text: str) -> str:
-    items = [ord(c) for c in text]
-    return json.dumps(items)
-
-
-def ord_to_text(text: str) -> str:
-    items = json.loads(text)
-    return ''.join(chr(x) for x in items)
 
 
 log = get_logger(__file__, DIR_LOGS / 'log.txt')
@@ -82,7 +75,7 @@ log = get_logger(__file__, DIR_LOGS / 'log.txt')
 @log_func(log)
 def on_start(update: Update, context: CallbackContext):
     update.effective_message.reply_text(
-        'Bot for encoding/decoding to/from Base64/HEX. Support only UTF-8 encoding.\n'
+        'Bot for encoding/decoding to/from Base64/hex/bin. Support only UTF-8 encoding.\n'
         'Enter something and click on the button'
     )
 
@@ -103,32 +96,20 @@ def on_callback_query(update: Update, context: CallbackContext):
     query = update.callback_query
     query.answer()
 
+    query_text = query.data
     prev_text = text = query.message.text
     try:
-        match query.data:
-            case 'text_to_base64':
-                text = text_to_base64(text)
-            case 'base64_to_text':
-                text = base64_to_text(text)
-            case 'text_to_hex':
-                text = text_to_hex(text)
-            case 'hex_to_text':
-                text = hex_to_text(text)
-            case 'text_to_ord':
-                text = text_to_ord(text)
-            case 'ord_to_text':
-                text = ord_to_text(text)
-            case 'from_ghbdtn':
-                text = from_ghbdtn(text)
-            case 'decode_escapes':
-                text = decode_escapes(text)
-            case 'reset':
-                text = query.message.reply_to_message.text
-            case _:
-                raise Exception(f'Unsupported command {query.data!r}!')
+        if query_text == 'reset':
+            text = query.message.reply_to_message.text
+        else:
+            command = CommandEnum[query_text]
+            text = command(text)
 
         if len(text) > 4096:
             raise Exception('The resulting text is more than 4096 characters!')
+
+    except KeyError:
+        raise Exception(f'Unsupported command {query_text!r}!')
 
     except Exception as e:
         log.exception('Error:')
