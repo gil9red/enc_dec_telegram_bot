@@ -4,10 +4,7 @@ Telegram bot for encoding/decoding to/from Base64/HEX
 ---
 
 ## Requirements:
-
-* python >= 3.10
 * [requirements.txt](requirements.txt)
 
 ## Screenshot:
-
 ![screenshot.png](screenshot.png)
