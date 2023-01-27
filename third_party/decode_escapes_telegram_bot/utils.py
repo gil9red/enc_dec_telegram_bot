@@ -7,6 +7,7 @@ __author__ = 'ipetrash'
 import codecs
 import html
 import re
+from urllib.parse import unquote
 
 
 # SOURCE: html
@@ -45,7 +46,9 @@ def decode_html(text: str) -> str:
 
 def decode(text: str) -> str:
     text = decode_escapes(text)
-    return decode_html(text)
+    text = decode_html(text)
+    text = unquote(text)
+    return text
 
 
 if __name__ == '__main__':
@@ -74,3 +77,7 @@ if __name__ == '__main__':
     assert decode('\u0032&#x20AC;\n&#8364; \x32&euro; \U0001F601') == '2€\n€ 2€ 😁'
     assert decode('&#x20AC; &#8364; &euro;') == '€ € €'
     assert decode('"Hello" "World"!') == '"Hello" "World"!'
+
+    assert decode('%D0%BD%D0%B0%D1%81%D1%82%D0%BE%D0%BB%D1%8C%D0%BD%D1%8B%D0%B5 %D0%B8%D0%B3%D1%80%D1%8B') == 'настольные игры'
+    assert decode('%D0%B8 %D0%B3 %D1%80 %D1%8B') == 'и г р ы'
+    assert decode('%D0%B8 %D0%B3 %D1%80 %D1%8B \U0001F601') == 'и г р ы 😁'
