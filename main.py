@@ -95,7 +95,8 @@ def on_request(update: Update, context: CallbackContext):
     message.reply_text(
         message.text,
         reply_markup=REPLY_MARKUP,
-        quote=True
+        quote=True,
+        disable_web_page_preview=True,
     )
 
 
@@ -124,7 +125,11 @@ def on_callback_query(update: Update, context: CallbackContext):
         text = f'⚠ Error: {e}'
 
     if prev_text != text:
-        query.message.edit_text(text, reply_markup=REPLY_MARKUP)
+        query.message.edit_text(
+            text,
+            reply_markup=REPLY_MARKUP,
+            disable_web_page_preview=True,
+        )
 
 
 def on_error(update: Update, context: CallbackContext):
