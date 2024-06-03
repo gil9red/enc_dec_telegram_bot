@@ -32,7 +32,7 @@ from commands import (
     bin_to_text,
     text_to_ord,
     ord_to_text,
-    from_ghbdtn,
+    swap_keyboard,
     decode_escapes,
 )
 from common import get_logger, log_func, reply_error
@@ -47,7 +47,7 @@ class CommandEnum(enum.Enum):
     bin_to_text = ("bin -> text", bin_to_text)
     text_to_ord = ("text -> ord", text_to_ord)
     ord_to_text = ("ord -> text", ord_to_text)
-    from_ghbdtn = ("ghbdtn -> привет", from_ghbdtn)
+    swap_keyboard = ("ghbdtn <-> привет", swap_keyboard)
     decode_escapes = ("decode escapes", decode_escapes)
 
     def __init__(self, title: str, func: Callable[[str], str]):
@@ -79,7 +79,7 @@ REPLY_MARKUP = InlineKeyboardMarkup([
         CommandEnum.ord_to_text.get_button(),
     ],
     [
-        CommandEnum.from_ghbdtn.get_button(),
+        CommandEnum.swap_keyboard.get_button(),
     ],
     [
         CommandEnum.decode_escapes.get_button(),

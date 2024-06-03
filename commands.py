@@ -8,7 +8,7 @@ import base64
 import json
 
 from third_party.bin2str import str2bin as text_to_bin, bin2str as bin_to_text
-from third_party.from_ghbdtn import from_ghbdtn
+from third_party.swap_keyboard import swap_keyboard
 from third_party.decode_escapes_telegram_bot.utils import decode as decode_escapes
 
 
@@ -48,7 +48,8 @@ if __name__ == "__main__":
     assert hex_to_text(text_to_hex("Hello")) == "Hello"
     assert bin_to_text(text_to_bin("Hello")) == "Hello"
     assert ord_to_text(text_to_ord("Привет")) == "Привет"
-    assert from_ghbdtn("Ghbdtn") == "Привет"
+    assert swap_keyboard("Ghbdtn") == "Привет"
+    assert swap_keyboard("Руддщ") == "Hello"
     assert (
         decode_escapes("\U00000032\U0000002b\x32=\U00000034&euro; \U0001F601")
         == "2+2=4€ 😁"
